@@ -722,7 +722,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rcsThrust: 100
-  mainThrust: 15
+  mainThrust: 8
+  mainEngine: {fileID: 8300000, guid: 5790633129c26ee4e820ddea2aca5dbc, type: 3}
+  explosion: {fileID: 8300000, guid: 667990d781e50714393b28422d2fe047, type: 3}
+  nextLevelSound: {fileID: 8300000, guid: 2e20fbb067790854e8bd07968d858d8d, type: 3}
 --- !u!82 &5527213440570524294
 AudioSource:
   m_ObjectHideFlags: 0

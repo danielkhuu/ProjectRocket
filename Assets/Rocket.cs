@@ -16,6 +16,9 @@ public class Rocket : MonoBehaviour
     //floats need f at end of number
     [SerializeField] float rcsThrust = 100f;  //inspector value adjuster for rotation speed
     [SerializeField] float mainThrust = 5f; //inspector value adjuster for main thrust
+    [SerializeField] AudioClip mainEngine;
+    [SerializeField] AudioClip explosion;
+    [SerializeField] AudioClip nextLevelSound;
 
     enum State { Alive, Dying, Transcending }
     State state = State.Alive;
@@ -29,14 +32,14 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(state == State.Alive)
+        if (state == State.Alive)
         { //todo somewhere stop sound
-            Thrust();
-            Rotate();
+            RespondToThrustInput();
+            RespondToRotateInput();
         }
 
     }
-    void Rotate()
+    void RespondToRotateInput()
     {
         rigidBody.freezeRotation = true; //take manual control of rotation
         float rotationThisFrame = rcsThrust * Time.deltaTime;  //multiply by frame time. Longer frame time = faster rotate speed
@@ -44,7 +47,7 @@ public class Rocket : MonoBehaviour
 
         if (Input.GetKey(KeyCode.A))  //cannot rotate both ways at same time
         {
-            transform.Rotate(Vector3.forward * rotationThisFrame); 
+            transform.Rotate(Vector3.forward * rotationThisFrame);
         }
         else if (Input.GetKey(KeyCode.D))
         {
@@ -63,19 +66,24 @@ public class Rocket : MonoBehaviour
         */
     }
 
-    void Thrust()
+    void RespondToThrustInput()
     {
         if (Input.GetKey(KeyCode.Space))   //can thrust while rotating
         {
-            rigidBody.AddRelativeForce(Vector3.up* mainThrust);
-            if (!audioSource.isPlaying)
-            {
-                audioSource.Play();
-            }
+            ApplyThrust();
         }
         else
         {
             audioSource.Stop();
+        }
+    }
+
+    void ApplyThrust()
+    {
+        rigidBody.AddRelativeForce(Vector3.up * mainThrust);
+        if (!audioSource.isPlaying)
+        {
+            audioSource.PlayOneShot(mainEngine);
         }
     }
 
@@ -87,17 +95,30 @@ public class Rocket : MonoBehaviour
             case "Friendly":
                 break;
             case "Finish":
-                state = State.Transcending;
-                Invoke("LoadNextLevel", 1f);  //delay, 1f is 1 second 
+                StartSuccessSequence();
                 break;
             default:
                 //kill player
-                state = State.Dying;
-                Invoke("LoadFirstLevel", 1f);
+                StartDeathSequence();
                 break;
         }
     }
-    private void LoadNextLevel()
+    private void StartSuccessSequence()
+    {
+        state = State.Transcending;
+        audioSource.Stop();
+        audioSource.PlayOneShot(nextLevelSound);
+        Invoke("LoadNextLevel", 1f);  //delay, 1f is 1 second 
+    }
+    private void StartDeathSequence()
+    {
+        state = State.Dying;
+        audioSource.Stop(); //stop thrust sound
+        audioSource.PlayOneShot(explosion);
+        Invoke("LoadFirstLevel", 1f);
+    }
+
+private void LoadNextLevel()
     {
         SceneManager.LoadScene(1);
     }
