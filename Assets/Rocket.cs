@@ -9,8 +9,12 @@ using UnityEngine;
 public class Rocket : MonoBehaviour
 {
     // Start is called before the first frame update
-    Rigidbody rigidBody;
-    AudioSource audioSource;
+    Rigidbody rigidBody; //Component of rocket that allows for physical contact with world
+    AudioSource audioSource; //rocket thrust sound component
+
+    //floats need f at end of number
+    [SerializeField] float rcsThrust = 100f;  //inspector value adjuster for rotation speed
+    [SerializeField] float mainThrust = 5f; //inspector value adjuster for main thrust
 
     void Start()
     {
@@ -21,14 +25,42 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ProcessInput();
+        Thrust();
+        Rotate();
     }
-    private void ProcessInput()
+    private void Rotate()
     {
-        if(Input.GetKey(KeyCode.Space))   //can thrust while rotating
+        rigidBody.freezeRotation = true; //take manual control of rotation
+        float rotationThisFrame = rcsThrust * Time.deltaTime;  //multiply by frame time. Longer frame time = faster rotate speed
+
+
+        if (Input.GetKey(KeyCode.A))  //cannot rotate both ways at same time
         {
-            rigidBody.AddRelativeForce(Vector3.up);
-            if(!audioSource.isPlaying)
+            transform.Rotate(Vector3.forward * rotationThisFrame); 
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            transform.Rotate(-Vector3.forward * rotationThisFrame);
+        }
+        rigidBody.freezeRotation = false; //resume physics control of rotation
+        /*
+        else if (Input.GetKey(KeyCode.W))
+        {
+            transform.Rotate(Vector2.right);
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
+            transform.Rotate(Vector2.left);
+        }
+        */
+    }
+
+    void Thrust()
+    {
+        if (Input.GetKey(KeyCode.Space))   //can thrust while rotating
+        {
+            rigidBody.AddRelativeForce(Vector3.up* mainThrust);
+            if (!audioSource.isPlaying)
             {
                 audioSource.Play();
             }
@@ -37,15 +69,22 @@ public class Rocket : MonoBehaviour
         {
             audioSource.Stop();
         }
+    }
 
-        if (Input.GetKey(KeyCode.A))  //cannot rotate both ways at same time
+    void OnCollisionEnter(Collision collision) //determines collision behavior based on object tag
+    {
+        switch (collision.gameObject.tag) //switch collision based on tag of object
         {
-            transform.Rotate(Vector3.forward); 
+            case "Friendly":
+                print("Friendly object");
+                break;
+            case "Fuel":
+                print("Fuel");
+                break;
+            default:
+                print("Dead");
+                //kill player
+                break;
         }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            transform.Rotate(-Vector3.forward);
-        }
-
     }
 }
