@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour
 {
-    // Start is called before the first frame update
+   
     Rigidbody rigidBody; //Component of rocket that allows for physical contact with world
     AudioSource audioSource; //rocket thrust sound component
 
@@ -20,17 +20,21 @@ public class Rocket : MonoBehaviour
     [SerializeField] AudioClip explosion;
     [SerializeField] AudioClip nextLevelSound;
 
+    [SerializeField] ParticleSystem mainEngineParticles;
+    [SerializeField] ParticleSystem successParticles;
+    [SerializeField] ParticleSystem deathParticles;
+
     enum State { Alive, Dying, Transcending }
     State state = State.Alive;
 
-    void Start()
+    void Start()  // Start is called before the first frame update
     {
         rigidBody = GetComponent<Rigidbody>();  //ref rigidbody component from Rocketship on Unity Editor
         audioSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
-    void Update()
+    
+    void Update() // Update is called once per frame
     {
         if (state == State.Alive)
         { //todo somewhere stop sound
@@ -39,6 +43,7 @@ public class Rocket : MonoBehaviour
         }
 
     }
+
     void RespondToRotateInput()
     {
         rigidBody.freezeRotation = true; //take manual control of rotation
@@ -75,6 +80,7 @@ public class Rocket : MonoBehaviour
         else
         {
             audioSource.Stop();
+            mainEngineParticles.Stop();
         }
     }
 
@@ -85,6 +91,7 @@ public class Rocket : MonoBehaviour
         {
             audioSource.PlayOneShot(mainEngine);
         }
+        mainEngineParticles.Play();
     }
 
     void OnCollisionEnter(Collision collision) //determines collision behavior based on object tag
@@ -103,11 +110,14 @@ public class Rocket : MonoBehaviour
                 break;
         }
     }
+
     private void StartSuccessSequence()
     {
         state = State.Transcending;
         audioSource.Stop();
         audioSource.PlayOneShot(nextLevelSound);
+        mainEngineParticles.Stop();
+        successParticles.Play();
         Invoke("LoadNextLevel", 1f);  //delay, 1f is 1 second 
     }
     private void StartDeathSequence()
@@ -115,10 +125,12 @@ public class Rocket : MonoBehaviour
         state = State.Dying;
         audioSource.Stop(); //stop thrust sound
         audioSource.PlayOneShot(explosion);
+        mainEngineParticles.Stop();
+        deathParticles.Play();
         Invoke("LoadFirstLevel", 1f);
     }
 
-private void LoadNextLevel()
+    private void LoadNextLevel()
     {
         SceneManager.LoadScene(1);
     }
