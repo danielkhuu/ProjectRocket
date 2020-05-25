@@ -17,6 +17,9 @@ public class Rocket : MonoBehaviour
     [SerializeField] float rcsThrust = 100f;  //inspector value adjuster for rotation speed
     [SerializeField] float mainThrust = 5f; //inspector value adjuster for main thrust
 
+    enum State { Alive, Dying, Transcending }
+    State state = State.Alive;
+
     void Start()
     {
         rigidBody = GetComponent<Rigidbody>();  //ref rigidbody component from Rocketship on Unity Editor
@@ -26,10 +29,14 @@ public class Rocket : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Thrust();
-        Rotate();
+        if(state == State.Alive)
+        { //todo somewhere stop sound
+            Thrust();
+            Rotate();
+        }
+
     }
-    private void Rotate()
+    void Rotate()
     {
         rigidBody.freezeRotation = true; //take manual control of rotation
         float rotationThisFrame = rcsThrust * Time.deltaTime;  //multiply by frame time. Longer frame time = faster rotate speed
@@ -74,20 +81,28 @@ public class Rocket : MonoBehaviour
 
     void OnCollisionEnter(Collision collision) //determines collision behavior based on object tag
     {
+        if (state != State.Alive) { return; }//if not alive, do not execute below
         switch (collision.gameObject.tag) //switch collision based on tag of object
         {
             case "Friendly":
-                print("Friendly object");
                 break;
             case "Finish":
-                print("Hit Finish");
-                SceneManager.LoadScene(1);
+                state = State.Transcending;
+                Invoke("LoadNextLevel", 1f);  //delay, 1f is 1 second 
                 break;
             default:
-                print("Dead");
                 //kill player
-                SceneManager.LoadScene(0);
+                state = State.Dying;
+                Invoke("LoadFirstLevel", 1f);
                 break;
         }
+    }
+    private void LoadNextLevel()
+    {
+        SceneManager.LoadScene(1);
+    }
+    private void LoadFirstLevel()
+    {
+        SceneManager.LoadScene(0);
     }
 }
