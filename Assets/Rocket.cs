@@ -9,14 +9,12 @@ using UnityEngine.SceneManagement;
 
 public class Rocket : MonoBehaviour
 {
-   
     Rigidbody rigidBody; //Component of rocket that allows for physical contact with world
-    AudioSource audioSource; //rocket thrust sound component
 
-    //floats need f at end of number
     [SerializeField] float rcsThrust = 100f;  //inspector value adjuster for rotation speed
     [SerializeField] float mainThrust = 5f; //inspector value adjuster for main thrust
-    [SerializeField] float levelLoadDelay = 1f;
+    [SerializeField] float levelLoadDelay = 1f; //1 second delay
+
     [SerializeField] AudioClip mainEngine;
     [SerializeField] AudioClip explosion;
     [SerializeField] AudioClip nextLevelSound;
@@ -25,22 +23,24 @@ public class Rocket : MonoBehaviour
     [SerializeField] ParticleSystem successParticles;
     [SerializeField] ParticleSystem deathParticles;
 
-    enum State { Alive, Dying, Transcending }
-    State state = State.Alive;
+    bool isTransitioning= false; //determins if player is respawning or playing the level
+    bool collisionsDisabled = false; //disables collision (used for debugging mode)
 
-    bool collisionsDisabled = false;
+      AudioSource audioSource; //rocket thrust sound component
 
     void Start()  // Start is called before the first frame update
     {
-        rigidBody = GetComponent<Rigidbody>();  //ref rigidbody component from Rocketship on Unity Editor
-        audioSource = GetComponent<AudioSource>();
+        /*references rigidbody component from Rocketship on Unity Editor
+         * rigidBody component on rocket allows rocket to collide with other objects in scene
+         * */
+        rigidBody = GetComponent<Rigidbody>();  
+        audioSource = GetComponent<AudioSource>();    
     }
-
-    
-    void Update() // Update is called once per frame
+   
+    void Update() // Update is called once per frame. Reads key input on each frame
     {
-        if (state == State.Alive)
-        { //todo somewhere stop sound
+        if (!isTransitioning)       //while player is not respawning, read input
+        { 
             RespondToThrustInput();
             RespondToRotateInput();
         }
@@ -51,12 +51,12 @@ public class Rocket : MonoBehaviour
 
     }
 
-    void RespondToRotateInput()
+    void RespondToRotateInput()         //reads A and D key for left and right rotation
     {
-        rigidBody.freezeRotation = true; //take manual control of rotation
+        rigidBody.angularVelocity = Vector3.zero; //remove rotation due to physics
+        
         float rotationThisFrame = rcsThrust * Time.deltaTime;  //multiply by frame time. Longer frame time = faster rotate speed
-
-
+ 
         if (Input.GetKey(KeyCode.A))  //cannot rotate both ways at same time
         {
             transform.Rotate(Vector3.forward * rotationThisFrame);
@@ -65,8 +65,9 @@ public class Rocket : MonoBehaviour
         {
             transform.Rotate(-Vector3.forward * rotationThisFrame);
         }
-        rigidBody.freezeRotation = false; //resume physics control of rotation
-        /*
+        
+
+        /*   //if I want to move rocket forward and backwards on z axis
         else if (Input.GetKey(KeyCode.W))
         {
             transform.Rotate(Vector2.right);
@@ -78,77 +79,90 @@ public class Rocket : MonoBehaviour
         */
     }
 
-    void RespondToThrustInput()
+    void RespondToThrustInput()        //reads space key and calls ApplyThrust method
     {
-        if (Input.GetKey(KeyCode.Space))   //can thrust while rotating
+        if (Input.GetKey(KeyCode.Space))   
         {
             ApplyThrust();
         }
-        else
+        else        //only apply thrust if space key is pressed
         {
-            audioSource.Stop();
-            mainEngineParticles.Stop();
+            StopApplyingThrust();
         }
     }
-
     void ApplyThrust()
     {
-        rigidBody.AddRelativeForce(Vector3.up * mainThrust*Time.deltaTime);
-        if (!audioSource.isPlaying)
+        rigidBody.AddRelativeForce(Vector3.up * mainThrust*Time.deltaTime);  //applies upward force on rocket
+        if (!audioSource.isPlaying)         
         {
-            audioSource.PlayOneShot(mainEngine);
+            audioSource.PlayOneShot(mainEngine); //plays thrust sound 
         }
-        mainEngineParticles.Play();
-    }
+        mainEngineParticles.Play();              //engine particles
+    }        //applies upward movement on rocket, plays engine sound and particles
+    void StopApplyingThrust()
+    {
+        audioSource.Stop();
+        mainEngineParticles.Stop();
+    } //stops engine sound and particles
 
     void OnCollisionEnter(Collision collision) //determines collision behavior based on object tag
     {
-        if (state != State.Alive || collisionsDisabled) { return; }//if not alive, do not execute below
-        switch (collision.gameObject.tag) //switch collision based on tag of object
+        if (isTransitioning || collisionsDisabled) { return; }//if respawning, do not execute below
+        switch (collision.gameObject.tag) //switch collision behavior based on tag of object
         {
-            case "Friendly":
+            case "Friendly":            //ex: launch pad should not kill player
                 break;
-            case "Finish":
+            case "Finish":              //collision with landing pad will execute next-level sequence
                 StartSuccessSequence();
                 break;
-            default:
-                //kill player
-                StartDeathSequence();
+            default:               
+                StartDeathSequence();   //collision with anything else kills player
                 break;
         }
     }
 
     private void StartSuccessSequence()
     {
-        state = State.Transcending;
-        audioSource.Stop();
-        audioSource.PlayOneShot(nextLevelSound);
-        mainEngineParticles.Stop();
+        isTransitioning = true;
+        audioSource.Stop();                      //stops thrust sound
+        mainEngineParticles.Stop();              //stops engine particles
+        audioSource.PlayOneShot(nextLevelSound); //plays next-level sound
         successParticles.Play();
-        Invoke("LoadNextLevel", levelLoadDelay);  //delay, can be changed in inspector
-    }
+        Invoke("LoadNextLevel", levelLoadDelay);  //call LoadNextLevel method w/ delay
+    }        //win effects and moves to next level
     private void StartDeathSequence()
     {
-        state = State.Dying;
-        audioSource.Stop(); //stop thrust sound
-        audioSource.PlayOneShot(explosion);
-        mainEngineParticles.Stop();
-        deathParticles.Play();
-        Invoke("LoadFirstLevel", levelLoadDelay);
-    }
+        isTransitioning = true;
+        audioSource.Stop();                 //stops thrust sound
+        mainEngineParticles.Stop();        
+        audioSource.PlayOneShot(explosion); //play explosion sound
+        deathParticles.Play();              
+        Invoke("RestartLevel", levelLoadDelay); //call RestartLevel method w/ delay
+    }         //death effects and restarts level
 
     private void LoadNextLevel()
     {
-        SceneManager.LoadScene(1);
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex; //gets current scene number
+        int nextSceneIndex = currentSceneIndex + 1; //adds 1 to current scene to get next scene
+        SceneManager.LoadScene(nextSceneIndex);     //load the scene
+
+        //if reached last level, loop back to first level
+        if (nextSceneIndex == SceneManager.sceneCountInBuildSettings)
+        {   
+            nextSceneIndex = 0;  
+        }
+        SceneManager.LoadScene(nextSceneIndex); //loads first level
     }
-    private void LoadFirstLevel()
+    private void RestartLevel()
     {
-        SceneManager.LoadScene(0);
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex; 
+        SceneManager.LoadScene(currentSceneIndex);
     }
 
-    void RespondToDebugKeys()
-    {
-        if (Input.GetKeyDown(KeyCode.L))   //can thrust while rotating
+    void RespondToDebugKeys() //Debug mode 
+    {    /*L for force next level
+           C to toggle collision */
+        if (Input.GetKeyDown(KeyCode.L))  
         {
             LoadNextLevel();
         }
@@ -158,3 +172,5 @@ public class Rocket : MonoBehaviour
         }
     }
 }
+
+//Daniel Khuu 5/26/2020 0:43 Finished Code for "Project Boost" Unity Project 

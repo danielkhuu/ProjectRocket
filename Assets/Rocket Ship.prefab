@@ -848,7 +848,7 @@ GameObject:
   - component: {fileID: 5527213440570524293}
   - component: {fileID: 5527213440570524292}
   - component: {fileID: 5527213440570524295}
-  - component: {fileID: 5527213440570524294}
+  - component: {fileID: 91472419}
   m_Layer: 0
   m_Name: Rocket Ship
   m_TagString: Player
@@ -919,7 +919,7 @@ MonoBehaviour:
   mainEngineParticles: {fileID: 8050982236855630315}
   successParticles: {fileID: 4838673736003596259}
   deathParticles: {fileID: 5508060919355327404}
---- !u!82 &5527213440570524294
+--- !u!82 &91472419
 AudioSource:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -929,9 +929,9 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 1a5590a6a736a424ca6ba989c539be4e, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 0.757
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
   m_Pitch: 1
   Loop: 0
   Mute: 0
