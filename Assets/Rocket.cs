@@ -16,6 +16,7 @@ public class Rocket : MonoBehaviour
     //floats need f at end of number
     [SerializeField] float rcsThrust = 100f;  //inspector value adjuster for rotation speed
     [SerializeField] float mainThrust = 5f; //inspector value adjuster for main thrust
+    [SerializeField] float levelLoadDelay = 1f;
     [SerializeField] AudioClip mainEngine;
     [SerializeField] AudioClip explosion;
     [SerializeField] AudioClip nextLevelSound;
@@ -26,6 +27,8 @@ public class Rocket : MonoBehaviour
 
     enum State { Alive, Dying, Transcending }
     State state = State.Alive;
+
+    bool collisionsDisabled = false;
 
     void Start()  // Start is called before the first frame update
     {
@@ -40,6 +43,10 @@ public class Rocket : MonoBehaviour
         { //todo somewhere stop sound
             RespondToThrustInput();
             RespondToRotateInput();
+        }
+        if (Debug.isDebugBuild) //only respond to this method if debug build
+        {
+            RespondToDebugKeys();
         }
 
     }
@@ -86,7 +93,7 @@ public class Rocket : MonoBehaviour
 
     void ApplyThrust()
     {
-        rigidBody.AddRelativeForce(Vector3.up * mainThrust);
+        rigidBody.AddRelativeForce(Vector3.up * mainThrust*Time.deltaTime);
         if (!audioSource.isPlaying)
         {
             audioSource.PlayOneShot(mainEngine);
@@ -96,7 +103,7 @@ public class Rocket : MonoBehaviour
 
     void OnCollisionEnter(Collision collision) //determines collision behavior based on object tag
     {
-        if (state != State.Alive) { return; }//if not alive, do not execute below
+        if (state != State.Alive || collisionsDisabled) { return; }//if not alive, do not execute below
         switch (collision.gameObject.tag) //switch collision based on tag of object
         {
             case "Friendly":
@@ -118,7 +125,7 @@ public class Rocket : MonoBehaviour
         audioSource.PlayOneShot(nextLevelSound);
         mainEngineParticles.Stop();
         successParticles.Play();
-        Invoke("LoadNextLevel", 1f);  //delay, 1f is 1 second 
+        Invoke("LoadNextLevel", levelLoadDelay);  //delay, can be changed in inspector
     }
     private void StartDeathSequence()
     {
@@ -127,7 +134,7 @@ public class Rocket : MonoBehaviour
         audioSource.PlayOneShot(explosion);
         mainEngineParticles.Stop();
         deathParticles.Play();
-        Invoke("LoadFirstLevel", 1f);
+        Invoke("LoadFirstLevel", levelLoadDelay);
     }
 
     private void LoadNextLevel()
@@ -137,5 +144,17 @@ public class Rocket : MonoBehaviour
     private void LoadFirstLevel()
     {
         SceneManager.LoadScene(0);
+    }
+
+    void RespondToDebugKeys()
+    {
+        if (Input.GetKeyDown(KeyCode.L))   //can thrust while rotating
+        {
+            LoadNextLevel();
+        }
+        else if(Input.GetKeyDown(KeyCode.C))
+        {
+            collisionsDisabled = !collisionsDisabled; //toggle
+        }
     }
 }
