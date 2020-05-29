@@ -26,7 +26,7 @@ public class Rocket : MonoBehaviour
     bool isTransitioning= false; //determins if player is respawning or playing the level
     bool collisionsDisabled = false; //disables collision (used for debugging mode)
 
-      AudioSource audioSource; //rocket thrust sound component
+    AudioSource audioSource; //rocket thrust sound component
 
     void Start()  // Start is called before the first frame update
     {
@@ -34,7 +34,8 @@ public class Rocket : MonoBehaviour
          * rigidBody component on rocket allows rocket to collide with other objects in scene
          * */
         rigidBody = GetComponent<Rigidbody>();  
-        audioSource = GetComponent<AudioSource>();    
+        audioSource = GetComponent<AudioSource>();
+        
     }
    
     void Update() // Update is called once per frame. Reads key input on each frame

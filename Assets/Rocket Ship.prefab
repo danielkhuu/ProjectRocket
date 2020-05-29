@@ -910,8 +910,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5291e3e59cd5664b8c884ca43e24ef9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rcsThrust: 100
-  mainThrust: 3000
+  rcsThrust: 150
+  mainThrust: 6000
   levelLoadDelay: 1
   mainEngine: {fileID: 8300000, guid: 5790633129c26ee4e820ddea2aca5dbc, type: 3}
   explosion: {fileID: 8300000, guid: 667990d781e50714393b28422d2fe047, type: 3}
@@ -931,7 +931,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.371
   m_Pitch: 1
   Loop: 0
   Mute: 0
