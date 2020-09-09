@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/*This script, when attached to an object in-game, 
+will make the object oscillate based on user's parameters
+*/
 [DisallowMultipleComponent] //so you dont have duplicate scripts for an object
 public class Oscillator : MonoBehaviour
 {
