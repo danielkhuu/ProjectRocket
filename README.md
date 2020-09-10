@@ -5,8 +5,13 @@ My first Unity project. A simple game where the player has to fly and manuever a
 #### Project Status
 I do not intend to continue working on this project. 
 ## Gallery
+<<<<<<< HEAD
 ![First Level](https://github.com/danielkhuu/ProjectRocket/blob/master/Images/RocketGameSC00.PNG?raw=true)
 ![Third Level](https://github.com/danielkhuu/ProjectRocket/blob/master/Images/RocketGameSC01.PNG?raw=true)
+=======
+![First Level](https://github.com/danielkhuu/ProjectRocket/blob/master/Images/ProjectRocketSC.PNG?raw=true)
+![Third Level](https://github.com/danielkhuu/ProjectRocket/blob/master/Images/ProjectRocketSC1.PNG?raw=true)
+>>>>>>> 3c4840fcaa7afe3de962202222b3e00ad18cb94e
 
 ## Usage
 This is a Unity project, but you can build it for any platform Unity supports using the Unity game engine.
@@ -35,3 +40,7 @@ This is a Unity project, but you can build it for any platform Unity supports us
 ## License
 ![License](https://github.com/danielkhuu/ProjectRocket/blob/master/LICENSE.txt)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3c4840fcaa7afe3de962202222b3e00ad18cb94e
